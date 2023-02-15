@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Define function to run XSSer at max intensity with multithreading
+run_xsser() {
+  echo "Starting XSSer with $xsser_threads threads at max intensity..."
+  xsser -u $url -s high -t $xsser_threads
+}
+
+# Define function to run Nikto at max intensity with multithreading
+run_nikto() {
+  echo "Starting Nikto with $nikto_threads threads at max intensity..."
+  nikto -h $url -maxtime 3600 -C all -Tuning xlarge -mutate $nikto_threads
+}
+
+# Define function to run SQLmap at max intensity with multithreading
+run_sqlmap() {
+  echo "Starting SQLmap with $sqlmap_threads threads at max intensity..."
+  sqlmap -u $url --level 5 --risk 3 --threads $sqlmap_threads --batch
+}
+
+# Prompt user for URL
+read -p "Enter the URL to test: " url
+
+# Prompt user for number of threads for each tool
+read -p "Enter the number of threads for XSSer (default 10): " xsser_threads
+xsser_threads=${xsser_threads:-10} # If user does not input a value, default to 10 threads
+read -p "Enter the number of threads for Nikto (default 10): " nikto_threads
+nikto_threads=${nikto_threads:-10} # If user does not input a value, default to 10 threads
+read -p "Enter the number of threads for SQLmap (default 10): " sqlmap_threads
+sqlmap_threads=${sqlmap_threads:-10} # If user does not input a value, default to 10 threads
+
+# Prompt user to confirm running at max intensity with multithreading
+read -p "Are you sure you want to run XSSer, Nikto, and SQLmap with $xsser_threads, $nikto_threads, and $sqlmap_threads threads, respectively? (y/n): " confirm
+
+# Run tools at max intensity with multithreading if user confirms
+if [ "$confirm" == "y" ]; then
+  # Run each tool in the background so they run at the same time
+  run_xsser &
+  run_nikto &
+  run_sqlmap &
+else
+  echo "Aborting."
+fi
